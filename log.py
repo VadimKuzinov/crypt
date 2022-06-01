@@ -1,3 +1,4 @@
+from unittest import result
 import numpy
 
 class Poly:
@@ -63,9 +64,7 @@ class Poly:
         if other is None:
             return current_poly
 
-        #current_poly = Poly(self.x, self.deg)
         while current_poly.deg >= other.deg:
-
             mul_deg = current_poly.deg - other.deg            
             mul_kf = current_poly.x[-1] / other.x[-1]
             mul_poly = Poly([0] * (mul_deg + 1), mul_deg + 1)
@@ -179,15 +178,16 @@ class GaluaField:
 
     @classmethod
     def multiply(cls, a: int, b: int):
-        result = Poly.to_poly(a, cls.p) * Poly.to_poly(b, cls.p)
+        #result = Poly.to_poly(a, cls.p) * Poly.to_poly(b, cls.p)
+        #"""
+        a = Poly.to_poly(a, cls.p)
+        b = Poly.to_poly(b, cls.p)
+        a.normalize_coefficients(GaluaField.p)
+        b.normalize_coefficients(GaluaField.p)
+        result = a * b
+        #"""
         result.normalize_coefficients(GaluaField.p)
         return cls.mod(result.to_int(cls.p), cls.f.to_int(cls.p))
-        result = result % cls.f
-        #result = cls.mod(result.to_int(cls.p), cls.f.to_int(cls.p))
-        result.normalize_coefficients(cls.p)
-
-        #return result
-        return result.to_int(cls.p)
 
     @classmethod
     def divmod(cls, a: int, b: int):
@@ -207,12 +207,9 @@ class GaluaField:
             dif_poly = b * mul_poly
             current_poly = current_poly - dif_poly
 
-        #result = result % cls.f
         result.normalize_coefficients(cls.p)
-
         current_poly.normalize_coefficients(cls.p)
 
-        #print(f'{Poly.to_poly(a, cls.p)} = ({result}) * ({b}) + {current_poly}')
         return (result.to_int(cls.p), current_poly.to_int(cls.p))
 
     @classmethod
@@ -263,14 +260,12 @@ class GaluaField:
 
     @classmethod
     def pow(cls, x: int, exp: int):
-        #print(f'{Poly.to_poly(x, cls.p)} ^ {exp} by mod {cls.f}')
         if exp < 0:
             x = cls.get_inverse(x)
             exp = -exp
         t = 1
         for i in range(exp):
             t = cls.multiply(t, x)
-            #print(Poly.to_poly(t, cls.p))
         return t
 
     @classmethod
@@ -300,11 +295,9 @@ class GaluaField:
             for i in range(pair[0]):
                 exp_v.append(exp)
                 exp = cls.multiply(exp, v)
-            #print(exp_v)
 
             power = (cls.q - 1) // pair[0]
             b_exp = cls.pow(b, power)
-            #print(b_exp)
             flag = False
             for i in range(pair[0]):
                 if exp_v[i] == b_exp:
@@ -324,7 +317,6 @@ class GaluaField:
                 a_exp = cls.pow(a, power_a)
                 ba = cls.multiply(b, a_exp)
                 ba_exp = cls.pow(ba, power)
-                #print(ba_exp)
                 flag = False
                 for k in range(pair[0]):
                     if exp_v[k] == ba_exp:
@@ -340,17 +332,14 @@ class GaluaField:
                 xi_cur += p_exp * y[i]
                 p_exp *= pair[0]
             xi.append(xi_cur)
-            #print(xi)
 
         return cls.CTOR(xi, [pair[0] ** pair[1] for pair in cls.factorization])
 
     @classmethod
     def gcd(cls, x: int, y: int):
-        #print(f'gcd({str(Poly.to_poly(x, cls.p))}, {str(Poly.to_poly(y, cls.p))})')
         if x < y:
             x, y = y, x
 
-        #print(f'x={x} y={y}')
         if y == 0:
             return x
 
@@ -371,20 +360,17 @@ class GaluaField:
 
             flag = False 
             cur_poly = exp + cur
-            #print("CURRENT_POLY: ", Poly.to_poly(cur_poly, cls.p))
             u = p
             for i in range(m // 2):
                 cls.f = Poly.to_poly(cur_poly, cls.p)
                 u = cls.pow(u, p)
                 cls.f = None
                 d = cls.gcd(cur_poly, cls.sub(u, p))
-                #print("GCD=", d)
                 if d >= cls.p:
                     flag = True
                     break
             if not flag:
                 cls.f = tmp
-                #print("SUCCESS")
                 yield Poly.to_poly(cur_poly, cls.p)
 
     @classmethod
@@ -403,7 +389,6 @@ class GaluaField:
             cur += 1
             cur_poly = exp + cur
             u = p
-            #print(Poly.to_poly(cur_poly, cls.p))
             for i in range(m // 2):
                 cls.f = Poly.to_poly(cur_poly, cls.p)
                 u = cls.pow(u, p)
@@ -414,7 +399,6 @@ class GaluaField:
                     break
             cls.f = tmp
             if not flag:
-                #cls.f = tmp
                 res.append(Poly.to_poly(cur_poly, cls.p))
         return res
 
@@ -424,12 +408,10 @@ class GaluaField:
             m  = degree + 1
             flag = True
             for newf in cls.get_irreducible_poly(m):
-                #print("NEWF = ", newf)
                 flag = False
                 for pair in cls.factorization:
                     exp = (cls.q - 1) // pair[0]
                     l = cls.pow(newf.to_int(cls.p), exp)
-                    #print(f'{Poly.to_poly(cls.p, cls.p)} ^ {exp} = {Poly.to_poly(l, cls.p)} MOD {newf}')
                     if l == 1:
                         flag = True
                         break
