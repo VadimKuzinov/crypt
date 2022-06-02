@@ -1,5 +1,5 @@
-from unittest import result
 import numpy
+
 
 class Poly:
     x: list = []
@@ -131,7 +131,6 @@ class Poly:
         exp = 1
         for i in range(self.deg):
             res += exp * self.x[i]
-            #print(res)
             exp *= base
         return res
 
@@ -186,8 +185,10 @@ class GaluaField:
         b.normalize_coefficients(GaluaField.p)
         result = a * b
         #"""
+        result = result % cls.f
         result.normalize_coefficients(GaluaField.p)
-        return cls.mod(result.to_int(cls.p), cls.f.to_int(cls.p))
+        return result.to_int(cls.p)
+        return #cls.mod(result.to_int(cls.p), cls.f.to_int(cls.p))
 
     @classmethod
     def divmod(cls, a: int, b: int):
@@ -260,6 +261,8 @@ class GaluaField:
 
     @classmethod
     def pow(cls, x: int, exp: int):
+        #print(f'exp = {exp}')
+        """
         if exp < 0:
             x = cls.get_inverse(x)
             exp = -exp
@@ -267,6 +270,19 @@ class GaluaField:
         for i in range(exp):
             t = cls.multiply(t, x)
         return t
+        """
+        if exp < 0:
+            x = cls.get_inverse(x)
+            exp = -exp
+
+        if exp == 0:
+            return 1
+
+        if exp % 2 == 0:
+            tmp = cls.pow(x, exp // 2)
+            return cls.multiply(tmp, tmp)
+
+        return cls.multiply(cls.pow(x, exp - 1), x)
 
     @classmethod
     def CTOR(cls, xi: list, m: list):
@@ -418,6 +434,10 @@ class GaluaField:
                 if not flag:
                     yield newf
 
+
+class GaluaFieldExtension(GaluaField):
+    
+
 def get_factorization(num: int):
     result = list()
     p = num
@@ -455,3 +475,14 @@ def get_inverse_by_mod(x: int, mod: int):
 
     return t
 
+
+
+#tests
+
+
+if __name__ == "__main__":
+    GaluaField.set_params(7, 4, Poly([6, 0, 3, 3]), Poly([2, 6, 5, 3, 1]))
+    t = Poly([1, 1])
+    
+    res = GaluaField.pow(t.to_int(GaluaField.p), 10023)
+    print(Poly.to_poly(res, GaluaField.p))
