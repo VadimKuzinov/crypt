@@ -14,6 +14,7 @@ GaluaField.set_params(p, h)
 a = [0] * GaluaField.p
 for i in range(GaluaField.p):
     a[i] = GaluaField.logg(GaluaField.g.to_int(GaluaField.p), Poly([i, 1]).to_int(GaluaField.p))
+    print(f'logg ({Poly([i, 1])}) = {a[i]}')
 #print(a)
 
 pi = list(numpy.random.permutation(GaluaField.p))
@@ -93,7 +94,8 @@ for k in range(frames_count):
     m_ready[k] = y
 
 #print("P / H IS READY")
-#print(m_ready)
+print("MESSAGE ALTERNATIVE FORM:")
+print(m_ready)
 
 #c = [12, 11, 6]
 encoded = [0] * frames_count
@@ -102,30 +104,42 @@ for k in range(frames_count):
         encoded[k] += (m_ready[k][i] * c[i]) % (GaluaField.q - 1)
         encoded[k] %= (GaluaField.q - 1)
 
-#print("ENCODED")
-
-#print(encoded)
+print("ENCODED MESSAGE:")
+print(encoded)
 
 #decoding
 
+print("DECODING...")
+
 m_dec_ready = [None] * frames_count
 for k in range(frames_count):
+    print(f'{k}\'th frame...')
     r = (encoded[k] - GaluaField.h * d) % (GaluaField.q - 1)
+
+    print(f'r = ({encoded[k]} - hd) mod {GaluaField.q - 1} = {r}')
+
     u = GaluaField.pow((GaluaField.g).to_int(GaluaField.p), r)
+
+    print(f'u(x) = g^r = {Poly.to_poly(u, GaluaField.p)}')
+
     sx = Poly.to_poly(u, GaluaField.p) + GaluaField.f
     sx.normalize_coefficients(GaluaField.p)
+
+    print(f's(x) = u(x) + f = {sx}')
     
+    print('s(x) = ', end="")
     y_dec = [0] * GaluaField.p
     for i in range(p):
         value = Poly.to_int(sx, i)
         if value % GaluaField.p == 0:
             root_reverse = (GaluaField.p - i) % GaluaField.p
+            print(f'(x + {root_reverse})', end="")
             y_dec[pi_[root_reverse]] = 1
-
+    print()
     m_dec_ready[k] = y_dec
 
-#print("DECODED")
-#print(m_dec_ready)
+print("DECODED MESSAGE ALTERNATIVE FORM:")
+print(m_dec_ready)
 
 decoded = [0] * frames_count
 for k in range(frames_count):
@@ -137,7 +151,6 @@ for k in range(frames_count):
             h_cur -= 1
     decoded[k] = n
 
-#print(decoded)
 s = ""
 cur_len = 0
 for i in range(frames_count):
@@ -159,4 +172,5 @@ for i in range(0, message_len, 8):
     s_s[k] = chr(int(s[i: i + 8] ,base=2))
     k += 1
 
+print("DECODED MESSAGE:")
 print(''.join(s_s)) 

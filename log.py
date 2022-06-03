@@ -434,8 +434,6 @@ class GaluaField:
                 if not flag:
                     yield newf
 
-
-class GaluaFieldExtension(GaluaField):
     
 
 def get_factorization(num: int):
