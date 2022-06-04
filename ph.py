@@ -1,6 +1,4 @@
 import math
-from operator import le
-from telnetlib import GA
 import numpy
 import random
 from log import *
