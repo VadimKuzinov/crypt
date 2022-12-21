@@ -1,5 +1,4 @@
 import random
-from telnetlib import GA
 import numpy
 from sympy import nextprime
 
@@ -182,29 +181,13 @@ class GaluaField:
 
     @classmethod
     def multiply(cls, a: int, b: int):
-        #result = Poly.to_poly(a, cls.p) * Poly.to_poly(b, cls.p)
-        #"""
         a = Poly.to_poly(a, cls.p)
         b = Poly.to_poly(b, cls.p)
-        #print(f'{a} *** {b}')
         a.normalize_coefficients(GaluaField.p)
         b.normalize_coefficients(GaluaField.p)
         result = a * b
         result.normalize_coefficients(GaluaField.p)
-        #print('result before %', result)
-        #"""
-        #print("LOOK HERE:", Poly.to_poly(cls.mod(result.to_int(197), GaluaField.f.to_int(197)), 197))
         return cls.mod(result.to_int(GaluaField.p), GaluaField.f.to_int(GaluaField.p))
-        result = result % cls.f
-        print('result after %', result)
-        result.normalize_coefficients(GaluaField.p)
-        print('result after normalizetion', result)
-        intv = result.to_int(cls.p)
-        #print('int v', intv)
-        #print('again to pOly:', Poly.to_poly(intv, cls.p))
-        #print('again to int', (Poly.to_poly(intv, cls.p)).to_int(cls.p))
-        return result.to_int(cls.p)
-        return #cls.mod(result.to_int(cls.p), cls.f.to_int(cls.p))
 
     @classmethod
     def divmod(cls, a: int, b: int):
@@ -277,16 +260,6 @@ class GaluaField:
 
     @classmethod
     def pow(cls, x: int, exp: int):
-        #print(f'exp = {exp}')
-        """
-        if exp < 0:
-            x = cls.get_inverse(x)
-            exp = -exp
-        t = 1
-        for i in range(exp):
-            t = cls.multiply(t, x)
-        return t
-        """
         if exp < 0:
             x = cls.get_inverse(x)
             exp = -exp
@@ -390,7 +363,7 @@ class GaluaField:
         cur = int(random.random() * exp)
         while True:
         #for cur in numpy.random.permutation(exp): ????
-            print(cur)
+            #print(cur)
             if cur % cls.p == 0:
                 cur += 1
                 cur %= exp
@@ -403,7 +376,7 @@ class GaluaField:
             u = p
             for i in range(m // 2):
                 cls.f = Poly.to_poly(cur_poly, cls.p)
-                print(f'{Poly.to_poly(u, cls.p).x} ^ {p} = {Poly.to_poly(cls.pow(u, p), cls.p)}')
+                #print(f'{Poly.to_poly(u, cls.p).x} ^ {p} = {Poly.to_poly(cls.pow(u, p), cls.p)}')
                 u = cls.pow(u, p)
 
                 cls.f = None
@@ -414,35 +387,6 @@ class GaluaField:
             if not flag:
                 cls.f = tmp
                 yield Poly.to_poly(cur_poly, cls.p)
-
-    @classmethod
-    def get_irreducible_poly_list(cls, deg: int = None):
-        res = []
-        tmp = cls.f
-
-        p = cls.p
-        m = deg or cls.h
-
-        exp = p ** m
-        cur = 0
-        flag = True
-        while cur < exp - 1:
-            flag = False 
-            cur += 1
-            cur_poly = exp + cur
-            u = p
-            for i in range(m // 2):
-                cls.f = Poly.to_poly(cur_poly, cls.p)
-                u = cls.pow(u, p)
-                cls.f = None
-                d = cls.gcd(cur_poly, cls.sub(u, p))
-                if d >= cls.p:
-                    flag = True
-                    break
-            cls.f = tmp
-            if not flag:
-                res.append(Poly.to_poly(cur_poly, cls.p))
-        return res
 
     @classmethod
     def get_primitive_poly(cls, deg: int = None):
@@ -460,7 +404,6 @@ class GaluaField:
                 if not flag:
                     yield newf
 
-    
 
 def get_factorization(num: int):
     result = list()
@@ -523,10 +466,10 @@ if __name__ == "__main__":
     print(Poly.to_poly(GaluaField.pow(Poly([0, 1]).to_int(97), 12), 97))
     print(Poly.to_poly(GaluaField.multiply(97**11, 97), 97))
     """
-    GaluaField.p = 197
-    GaluaField.h = 12
-    GaluaField.f = Poly([20, 168, 25, 90, 56, 178, 118, 131, 99, 181, 37, 173, 1])
-    x = Poly([0,1])
+    #GaluaField.p = 197
+    #GaluaField.h = 12
+    #GaluaField.f = Poly([20, 168, 25, 90, 56, 178, 118, 131, 99, 181, 37, 173, 1])
+    #x = Poly([0,1])
     #x23 = Poly.to_poly(GaluaField.pow(x.to_int(197), 23), 197)
     #print('x^23 = ', x23)
     #print(Poly.to_poly(GaluaField.multiply(x23.to_int(197), Poly([0, 1]).to_int(197)), 197))
@@ -535,3 +478,7 @@ if __name__ == "__main__":
     #print(Poly.to_poly(GaluaField.multiply(x12.to_int(197), x12.to_int(197)), 197))
     #print(Poly.to_poly(GaluaField.pow(x12.to_int(197), 2), 197))
     #"""
+
+    GaluaField.set_params(197, 24)
+    print(GaluaField.f)
+    print(GaluaField.g)
